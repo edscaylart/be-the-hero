@@ -39,7 +39,7 @@ class OngController implements TControllerBase {
 
     await Db('ongs').insert(ong)
 
-    return res.json({ id: ong.id })
+    return res.json(ong)
   }
 
   update = async (req: Request, res: Response): Promise<Response> => {
