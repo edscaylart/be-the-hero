@@ -1,4 +1,5 @@
 import express, { Request, Response } from 'express'
+import { celebrate, Segments, Joi } from 'celebrate'
 
 import TOng from '../types/ong'
 import TControllerBase from '../types/TControllerBase'
@@ -13,7 +14,15 @@ class SessionController implements TControllerBase {
   }
 
   public initRoutes(): void {
-    this.router.post(this.path, this.create)
+    this.router.post(
+      this.path,
+      celebrate({
+        [Segments.BODY]: Joi.object().keys({
+          id: Joi.string().required()
+        })
+      }),
+      this.create
+    )
   }
 
   create = async (req: Request, res: Response): Promise<Response> => {

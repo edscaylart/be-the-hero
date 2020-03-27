@@ -1,38 +1,21 @@
 import express from 'express'
+import cors from 'cors'
 
-class App {
-  public express: express.Application
-  public port: number
+import Api from './api'
+import SessionController from './controllers/SessionController'
+import OngController from './controllers/OngController'
+import IncidentController from './controllers/IncidentController'
+import ProfileController from './controllers/ProfileController'
 
-  constructor(appInit: { port: number; middleWares: any; controllers: any }) {
-    this.express = express()
-    this.port = appInit.port
+const app = new Api({
+  port: 3333,
+  controllers: [
+    new SessionController(),
+    new OngController(),
+    new IncidentController(),
+    new ProfileController()
+  ],
+  middleWares: [express.json(), cors()]
+})
 
-    this.middlewares(appInit.middleWares)
-    this.routes(appInit.controllers)
-  }
-
-  private middlewares(middleWares: {
-    forEach: (arg0: (middleWare: any) => void) => void;
-  }): void {
-    middleWares.forEach((middleWare) => {
-      this.express.use(middleWare)
-    })
-  }
-
-  private routes(controllers: {
-    forEach: (arg0: (controller: any) => void) => void;
-  }): void {
-    controllers.forEach((controller) => {
-      this.express.use('/', controller.router)
-    })
-  }
-
-  public listen(): void {
-    this.express.listen(this.port, () => {
-      console.log(`App listening on the http://localhost:${this.port}`)
-    })
-  }
-}
-
-export default App
+export default app

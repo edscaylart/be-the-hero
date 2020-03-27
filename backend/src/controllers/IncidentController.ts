@@ -1,4 +1,5 @@
 import express, { Request, Response } from 'express'
+import { celebrate, Segments, Joi } from 'celebrate'
 
 import TIncident from '../types/incident'
 import TControllerBase from '../types/TControllerBase'
@@ -13,11 +14,52 @@ class IncidentController implements TControllerBase {
   }
 
   public initRoutes(): void {
-    this.router.get(this.path + '/:id', this.show)
-    this.router.get(this.path, this.index)
-    this.router.post(this.path, this.create)
-    this.router.put(this.path + '/:id', this.update)
-    this.router.delete(this.path + '/:id', this.destroy)
+    this.router.get(
+      this.path + '/:id',
+      celebrate({
+        [Segments.PARAMS]: Joi.object().keys({
+          id: Joi.number()
+        })
+      }),
+      this.show
+    )
+    this.router.get(this.path, celebrate({
+      [Segments.QUERY]: Joi.object().keys({
+        page: Joi.number()
+      })
+    }), this.index)
+    this.router.post(
+      this.path,
+      celebrate({
+        [Segments.HEADERS]: Joi.object({
+          authorization: Joi.string().required()
+        }).unknown(),
+        [Segments.BODY]: Joi.object().keys({
+          title: Joi.string().required().min(4),
+          description: Joi.string().required().min(15),
+          value: Joi.number().required()
+        })
+      }),
+      this.create
+    )
+    this.router.put(
+      this.path + '/:id',
+      celebrate({
+        [Segments.PARAMS]: Joi.object().keys({
+          id: Joi.number().required()
+        })
+      }),
+      this.update
+    )
+    this.router.delete(
+      this.path + '/:id',
+      celebrate({
+        [Segments.PARAMS]: Joi.object().keys({
+          id: Joi.number().required()
+        })
+      }),
+      this.destroy
+    )
   }
 
   index = async (req: Request, res: Response): Promise<Response> => {
@@ -79,7 +121,7 @@ class IncidentController implements TControllerBase {
       .select('ong_id')
       .first()
 
-    if (incident.ong_id !== ong_id) {
+    if (incident?.ong_id !== ong_id) {
       return res.status(401).json({ error: 'Operation not permited.' })
     }
 
